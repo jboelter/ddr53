@@ -47,3 +47,18 @@ Create a limited AWS IAM user and assign the policy below (changing the Hosted Z
         }
       ]
     }
+
+Example /etc/dhcp/dhclient-exit-hooks.d/ script
+````
+user@host:/etc/dhcp/dhclient-exit-hooks.d
+> cat dyndns-route53.sh
+#!/bin/bash
+
+IP="$(/sbin/ifconfig eth0 | grep 'inet addr' | cut -d: -f2 | awk '{print $1}')"
+
+echo $IP
+
+AWS_ACCESS_KEY_ID=key AWS_SECRET_ACCESS_KEY=secret /config/scripts/ddr53 --zoneid ZA9XF3OWSDQP1 --type A --value ${IP} --fqdn foo.example.com >> /var/log/ddr53.log 2>&1
+
+logger ${0##*/}: 'dyndns-route53 attempted to update foo.example.com to ' $IP
+````
